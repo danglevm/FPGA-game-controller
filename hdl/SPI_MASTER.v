@@ -28,7 +28,7 @@ module SPI_MASTER
 	
 	//MISO - RX - master receives data from slave, then outputs it to higher level
 	output reg o_RX_DV,
-	output reg [7:0] o_RX_DATA,
+	output reg [7:0] o_RX_BYTE,
 	
 	/**********************
 		SPI interface - writing onto data lines
@@ -51,7 +51,7 @@ wire w_CPHA = 0;
 reg [7:0] r_TX_BYTE = 0;
 
 //store number of edges
-reg [3:0]
+reg [3:0] r_CLK_EDGES = 16;
 
 //tell the SPI clock to send out a signal to shift or read incoming bits
 //here falling or rising edge doesn't matter == CPOL doesn't matter because the bit read/shift operation is done only during leading/trailing edge 
@@ -91,14 +91,15 @@ assign r_TX_BYTE = i_TX_BYTE;
 always @ (posedge i_CLK or posedge i_RESET) begin
 	
 	if (i_RESET) begin
-		o_TX_READY <= 0;
-		r_CLK_CNT <= 0;
-		r_LEADING_EDGE <= 0;
-		r_TRAILING_EDGE <= 0;
+		o_TX_READY <= c_LOW;
+		r_CLK_CNT <= c_LOW;
+		r_LEADING_EDGE <= c_LOW;
+		r_TRAILING_EDGE <= c_LOW;
+		r_TRAILING_EDGE <= 16;
 	
 	end else begin 
-		r_LEADING_EDGE;
-		r_TRAILING_EDGE;
+		r_LEADING_EDGE <= c_LOW;
+		r_TRAILING_EDGE <= c_LOW;
 	
 		//data sent in from higher module is ready
 		if (i_TX_DV) begin 
@@ -106,19 +107,20 @@ always @ (posedge i_CLK or posedge i_RESET) begin
 			//at the end of the second half of the clock cycle
 			if (r_CLK_CNT == (c_CLKS_PER_HALF_BIT*2 - 1)) begin
 				r_CLK_CNT <= 0;
-				r_LEADING_EDGE <= 0;
-				r_TRAILING_EDGE <= 1;
+				r_LEADING_EDGE <= c_LOW;
+				r_TRAILING_EDGE <= c_HIGH;
 			
 				//takes one clock cycle to add the value then another clock cycle to resolve this so -1
 			end else if (r_CLK_CNT == (c_CLKS_PER_HALF_BIT - 1)) begin
 				//send leading edge signal
-				r_LEADING_EDGE <= 1;
-				r_TRAILING_EDGE <= 0;
+				r_LEADING_EDGE <= c_HIGH;
+				r_TRAILING_EDGE <= c_LOW;
 				
 			end else begin
 				r_CLK_CNT <= r_CLK_CNT + 1;
 			end
 		
+		end //TX_DV
 	
 	end //if reset
 	
@@ -136,15 +138,14 @@ always @ (posedge i_CLK or posedge i_RESET) begin
 		r_TX_BIT_INDEX <= 3'b111;
 	
 	end else begin 
-		
-		
-		//data signal ready to be sent
+				
+		//data signal ready, on standby to receive new data
 		if (o_TX_READY) begin
 			r_TX_BIT_INDEX <= 3'b111;
 			
-		else if (r_TX_DV && ~w_CPHA) begin
+	/*	else if (i_TX_DV && ~w_CPHA) begin
 			o_SPI_MOSI <= r_TX_BYTE[3'b111];
-			r_TX_BIT_INDEX <= 3'b110;
+			r_TX_BIT_INDEX <= 3'b110;*/
 			
 		//CPHA = 1 --> trailing edge. CPHA = 0 --> leading edge
 		//sample data from input parallel bits
@@ -171,12 +172,16 @@ always @ (posedge i_CLK or posedge i_RESET) begin
 	end else begin 
 	
 		if () begin
-		
-
+			r_TX_BIT_INDEX <= 3'b111;
 		
 		end else if ((r_LEADING_EDGE && w_CPHA) || (r_TRAILING_EDGE && ~w_CPHA)) begin
 		//send rx data onto the miso line
-		
+			o_RX_BYTE [r_RX_BIT_INDEX] <= i_SPI_MISO;
+			r_RX_BIT_INDEX = r_RX_BIT_INDEX - 1;
+			
+			if (r_RX_BIT_INDEX == 0) begin
+				o_RX_DV <= c_HIGH;
+			end
 		end
 		
 	
