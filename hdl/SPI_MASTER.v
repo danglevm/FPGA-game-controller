@@ -51,7 +51,7 @@ wire w_CPHA = 0;
 reg [7:0] r_TX_BYTE = 0;
 
 //store number of edges
-reg [3:0] r_CLK_EDGES = 16;
+reg [3:0] r_CLK_EDGES_PER_BYTE = 16;
 
 //tell the SPI clock to send out a signal to shift or read incoming bits
 //here falling or rising edge doesn't matter == CPOL doesn't matter because the bit read/shift operation is done only during leading/trailing edge 
@@ -95,7 +95,7 @@ always @ (posedge i_CLK or posedge i_RESET) begin
 		r_CLK_CNT <= c_LOW;
 		r_LEADING_EDGE <= c_LOW;
 		r_TRAILING_EDGE <= c_LOW;
-		r_TRAILING_EDGE <= 16;
+		r_CLK_EDGES_PER_BYTE <= 16;
 	
 	end else begin 
 		r_LEADING_EDGE <= c_LOW;
@@ -109,6 +109,7 @@ always @ (posedge i_CLK or posedge i_RESET) begin
 				r_CLK_CNT <= 0;
 				r_LEADING_EDGE <= c_LOW;
 				r_TRAILING_EDGE <= c_HIGH;
+				r_CLK_EDGES_PER_BYTE <= r_CLK_EDGES_PER_BYTE - 1;
 			
 				//takes one clock cycle to add the value then another clock cycle to resolve this so -1
 			end else if (r_CLK_CNT == (c_CLKS_PER_HALF_BIT - 1)) begin
@@ -118,6 +119,13 @@ always @ (posedge i_CLK or posedge i_RESET) begin
 				
 			end else begin
 				r_CLK_CNT <= r_CLK_CNT + 1;
+			end
+			
+			if (r_TRAILING_EDGE > 0) begin
+			
+			end else if (r_TRAILING_EDGE == 0) begin
+			//all 16 edges passed through, so one byte is sent and another can be taken in now
+				o_TX_READY <= c_HIGH;
 			end
 		
 		end //TX_DV
@@ -134,7 +142,7 @@ end //always
 always @ (posedge i_CLK or posedge i_RESET) begin
 	
 	if (i_RESET) begin
-		o_TX_READY <= c_LOW;
+		o_SPI_MOSI <= c_LOW;
 		r_TX_BIT_INDEX <= 3'b111;
 	
 	end else begin 
@@ -166,6 +174,7 @@ end //always
 always @ (posedge i_CLK or posedge i_RESET) begin
 	
 	if (i_RESET) begin
+		o_RX_BYTE <= 8'b00000000;
 		o_RX_DV <= c_LOW;
 		r_TX_BIT_INDEX <= 3'b111;
 	
