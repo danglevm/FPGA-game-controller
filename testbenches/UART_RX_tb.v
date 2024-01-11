@@ -52,7 +52,7 @@ wire w_VALID;
 UART_RX #( .c_CYCLES_PER_BIT(c_CYCLES_PER_BIT) ) UUT 
 (	
 	.i_CLK(r_CLK),
-	.i_RESET (r_RESET),
+	.i_RESET_n(r_RESET),
 	.i_SERIAL_DATA(r_SERIAL_DATA),
 	.o_DATA_RX(w_DATA_DRIVEN),
 	.o_RX_DATA_VALID(w_VALID)
@@ -104,6 +104,9 @@ initial
 		end else begin 
 			$display ("Incorrect value received");
 		end
+		
+		@(posedge r_CLK);
+		
 			
 		$stop;
 		

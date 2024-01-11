@@ -2,6 +2,7 @@ module UART_TX
 # (parameter c_CYCLES_PER_BIT)
 (
 	input i_CLK,
+	input i_RESET_n,
 	//comes from the transmitter
 	input i_TX_DV,
 	input [7:0] i_PARALLEL_DATA,
@@ -23,7 +24,14 @@ parameter s_DATA = 5'b00100;
 parameter s_END = 5'b01000;
 parameter s_TRANSITION = 5'b10000;
 
-always @(posedge i_CLK) 
+assign o_TX_ACTIVE = r_TX_ACTIVE;
+assign o_TX_DONE = r_TX_DONE;
+
+always @(posedge i_CLK or negedge i_RESET_n) 
+	if (~i_RESET_n) begin
+		s_STATE <= s_IDLE;
+	end else begin
+	
 	begin
 		case (s_STATE)
 		
@@ -105,7 +113,8 @@ always @(posedge i_CLK)
 
 	end
 	
-assign o_TX_ACTIVE = r_TX_ACTIVE;
-assign o_TX_DONE = r_TX_DONE;
+	end
+	
+
 
 endmodule

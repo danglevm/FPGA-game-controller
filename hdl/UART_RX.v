@@ -6,7 +6,7 @@ module UART_RX
 # (parameter c_CYCLES_PER_BIT = 217)
 (
 	input i_CLK,
-	input i_RESET,
+	input i_RESET_n,
 	input i_SERIAL_DATA,
 	output o_RX_DATA_VALID,
 	output [7:0] o_DATA_RX
@@ -58,9 +58,9 @@ always @ (posedge i_CLK)
 
 	
 //FSM
-always @(posedge i_CLK or posedge i_RESET)
+always @(posedge i_CLK or negedge ~i_RESET_n)
 	begin
-	if (i_RESET) begin
+	if (~i_RESET_n) begin
 		r_STATE <= s_IDLE;
 	end 
 	else begin

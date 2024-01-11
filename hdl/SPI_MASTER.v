@@ -14,7 +14,7 @@ module SPI_MASTER
   parameter c_CLKS_PER_HALF_BIT = 2)
 (
 	input i_CLK,
-	input i_RESET,
+	input i_RESET_n,
 	
 	
 	/************************
@@ -88,9 +88,9 @@ assign r_TX_BYTE = i_TX_BYTE;
 		Generate SPI trailing and falling edges
 *****************************/
 
-always @ (posedge i_CLK or posedge i_RESET) begin
+always @ (posedge i_CLK or negedge i_RESET_n) begin
 	
-	if (i_RESET) begin
+	if (~i_RESET_n) begin
 		o_TX_READY <= c_LOW;
 		r_CLK_CNT <= c_LOW;
 		r_LEADING_EDGE <= c_LOW;
@@ -101,29 +101,29 @@ always @ (posedge i_CLK or posedge i_RESET) begin
 		r_LEADING_EDGE <= c_LOW;
 		r_TRAILING_EDGE <= c_LOW;
 	
+		//default state so set trailing edges to default
+		if (o_TX_READY == c_HIGH) begin
+			r_CLK_EDGES_PER_BYTE <= 16;	
+		//countdown from 16 edges
+		end else if (r_TRAILING_EDGE > 0) begin
 		//data sent in from higher module is ready
-		if (i_TX_DV) begin 
-	
-			//at the end of the second half of the clock cycle
-			if (r_CLK_CNT == (c_CLKS_PER_HALF_BIT*2 - 1)) begin
-				r_CLK_CNT <= 0;
-				r_LEADING_EDGE <= c_LOW;
-				r_TRAILING_EDGE <= c_HIGH;
-				r_CLK_EDGES_PER_BYTE <= r_CLK_EDGES_PER_BYTE - 1;
-			
+			if (i_TX_DV) begin 
+				//at the end of the second half of the clock cycle
+				if (r_CLK_CNT == (c_CLKS_PER_HALF_BIT*2 - 1)) begin
+					r_CLK_CNT <= 0;
+					r_LEADING_EDGE <= c_LOW;
+					r_TRAILING_EDGE <= c_HIGH;
+					r_CLK_EDGES_PER_BYTE <= r_CLK_EDGES_PER_BYTE - 1;
 				//takes one clock cycle to add the value then another clock cycle to resolve this so -1
-			end else if (r_CLK_CNT == (c_CLKS_PER_HALF_BIT - 1)) begin
-				//send leading edge signal
-				r_LEADING_EDGE <= c_HIGH;
-				r_TRAILING_EDGE <= c_LOW;
+				end else if (r_CLK_CNT == (c_CLKS_PER_HALF_BIT - 1)) begin
+					//send leading edge signal
+					r_LEADING_EDGE <= c_HIGH;
+					r_TRAILING_EDGE <= c_LOW;
+				end else begin
+					r_CLK_CNT <= r_CLK_CNT + 1;
+				end		
 				
-			end else begin
-				r_CLK_CNT <= r_CLK_CNT + 1;
-			end
-			
-			if (r_TRAILING_EDGE > 0) begin
-			
-			end else if (r_TRAILING_EDGE == 0) begin
+		end else if (r_TRAILING_EDGE == 0) begin
 			//all 16 edges passed through, so one byte is sent and another can be taken in now
 				o_TX_READY <= c_HIGH;
 			end
@@ -139,7 +139,7 @@ end //always
 /****************************
 		MOSI
 *****************************/
-always @ (posedge i_CLK or posedge i_RESET) begin
+always @ (posedge i_CLK or negedge i_RESET_n) begin
 	
 	if (i_RESET) begin
 		o_SPI_MOSI <= c_LOW;
@@ -171,16 +171,17 @@ end //always
 /****************************
 		MISO
 *****************************/
-always @ (posedge i_CLK or posedge i_RESET) begin
+always @ (posedge i_CLK or negedge i_RESET_n) begin
 	
-	if (i_RESET) begin
+	if (i_RESET_n) begin
 		o_RX_BYTE <= 8'b00000000;
 		o_RX_DV <= c_LOW;
 		r_TX_BIT_INDEX <= 3'b111;
 	
 	end else begin 
-	
-		if () begin
+		
+		//in default state
+		if (o_TX_READY) begin
 			r_TX_BIT_INDEX <= 3'b111;
 		
 		end else if ((r_LEADING_EDGE && w_CPHA) || (r_TRAILING_EDGE && ~w_CPHA)) begin

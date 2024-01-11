@@ -1,6 +1,6 @@
 module VGA_controller (
 input i_CLK,
-input i_RESET,
+input i_RESET_n,
 //RRRGGGGBB based on user manual
 input [7:0] i_RGB,
 output o_HSYNC,
@@ -65,7 +65,10 @@ assign o_GREEN = r_Green;
 assign o_BLUE = r_Blue;
 
 
-always @ (posedge i_CLK) 
+always @ (posedge i_CLK or negedge i_RESET_n) 
+	if (~i_RESET_n) begin
+	
+	else
 	begin
 		case (r_H_STATE) 
 		s_H_ACTIVE: 
@@ -244,7 +247,7 @@ always @ (posedge i_CLK)
 
 	end
 
-
+	end
 
 
 endmodule

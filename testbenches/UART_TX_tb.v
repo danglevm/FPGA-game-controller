@@ -1,5 +1,6 @@
 
 `timescale 1ns/1ps
+`include "../hdl/UART_TX"
 
 module UART_TX_tb();
 

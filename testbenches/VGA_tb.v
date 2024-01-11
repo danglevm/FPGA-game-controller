@@ -1,3 +1,6 @@
+`include "../hdl/VGA_controller.v"
+`timescale 1ns/10ps
+
 module VGA_tb();
 
 reg r_clk = 0;
@@ -14,7 +17,7 @@ wire w_vsync;
 wire w_red, w_green, w_blue;
 
 
-VGA_driver (
+VGA_controller UUT(
 	.i_CLK(r_CLK),
 	.i_RESET(r_reset),
 	.i_RGB(r_RGB_data),
