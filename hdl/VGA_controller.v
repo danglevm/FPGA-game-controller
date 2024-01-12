@@ -1,4 +1,4 @@
-module VGA_controller (
+module VGA_CONTROLLER (
 input i_CLK,
 input i_RESET_n,
 //RRRGGGGBB based on user manual

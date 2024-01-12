@@ -16,8 +16,6 @@ module UART_RX
 );
 
 reg [2:0] r_STATE  = 3'b000;
-
-
 reg [7:0] r_COUNTER = 0;
 reg [2:0] r_BIT_INDEX = 0;
 reg r_RX_DV = 1'b0;
@@ -32,7 +30,7 @@ reg [7:0] r_DATA_RX;
 reg r_RX_DATA_I, r_RX_DATA_S;
 
 /******************************
-- 5 states
+	STATES
 *******************************/
 parameter s_IDLE = 3'b000;
 parameter s_START = 3'b001;
