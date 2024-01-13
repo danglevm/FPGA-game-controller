@@ -1,4 +1,4 @@
-module GAMECONTROLLER (
+module GAME_CONTROLLER (
 
 //-------CLOCK-------
 input i_ADC_CLK_10,
