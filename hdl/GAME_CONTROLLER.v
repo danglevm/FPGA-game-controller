@@ -1,9 +1,11 @@
+
+
 module GAME_CONTROLLER (
 
 //-------CLOCK-------
 input i_ADC_CLK_10,
 input i_MAX_10_CLK1_50,
-input i_MAX_10_CLK2_50
+input i_MAX_10_CLK2_50,
 
 //////////// SEG7 //////////
 output		     [7:0]		o_HEX0,
@@ -38,6 +40,16 @@ output		          		o_GSENSOR_SCLK, //SPI serial clock
 inout 		          		io_GSENSOR_SDI, //SPI serial data input 4-wire
 inout 		          		io_GSENSOR_SDO  //SPI serial data output
 );
+
+
+pll_100 pll_100_inst (
+  .inclk0 ( i_MAX_10_CLK1_50 ),
+  .c0 ( ),
+  .c1 ( ),
+  .c2 ( )
+);
+         
+
 
 wire w_clock;
 assign w_clock = i_MAX_10_CLK1_50;

@@ -1,5 +1,3 @@
-`include "../ip/pll_100_inst.v"
-
 module SPI_MASTER
 
 #(parameter c_SPI_MODE = 3, //SPI_mode is 3, so CPOL = 1 and CPHA = 1, can be changed later
@@ -48,8 +46,6 @@ wire w_CPHA = 0;
 /**************************
         Registers
 **************************/
-reg [7:0] r_TX_BYTE = 0;
-
 //store number of edges
 reg [3:0] r_CLK_EDGES_PER_BYTE = 16;
 
@@ -58,9 +54,9 @@ reg [3:0] r_CLK_EDGES_PER_BYTE = 16;
 reg r_LEADING_EDGE = 1'b0;
 reg r_TRAILING_EDGE = 1'b0;
 
-reg [2:0] r_TX_BIT_INDEX = 1'd8; //starts from MSb
-reg [2:0] r_RX_BIT_INDEX = 1'd8; //starts from MSb
-reg [2:0] r_CLK_CNT = 0; 
+reg [3:0] r_TX_BIT_INDEX = 8; //starts from MSb
+reg [3:0] r_RX_BIT_INDEX = 8; //starts from MSb
+reg [3:0] r_CLK_CNT = 0; 
 reg r_TX_DV = 0;
 
 
@@ -78,9 +74,9 @@ localparam c_LOW = 1'b0;
 ***************************/
 
 //bitwise operators - one of them correct and it's good
-assign w_CPOL = (SPI_MODE == 2) | (SPI_MODE == 3);
-assign w_CPHA = (SPI_MODE == 1) | (SPI_MODE == 3);
-assign r_TX_BYTE = i_TX_BYTE;
+assign w_CPOL = (c_SPI_MODE == 2) | (c_SPI_MODE == 3);
+assign w_CPHA = (c_SPI_MODE == 1) | (c_SPI_MODE == 3);
+
 
 
 
@@ -141,7 +137,7 @@ end //always
 *****************************/
 always @ (posedge i_CLK or negedge i_RESET_n) begin
 	
-	if (i_RESET) begin
+	if (i_RESET_n) begin
 		o_SPI_MOSI <= c_LOW;
 		r_TX_BIT_INDEX <= 3'b111;
 	
@@ -157,9 +153,9 @@ always @ (posedge i_CLK or negedge i_RESET_n) begin
 			
 		//CPHA = 1 --> trailing edge. CPHA = 0 --> leading edge
 		//sample data from input parallel bits
-		end else if ((r_TRAILING_EDGE && w_CPHA) || (r_LEADING_EDGE && ~w_CPHA) begin
-			o_SPI_MOSI <= r_TX_BYTE [r_TX_BIT_INDEX];
-			r_TX_BYTE <= r_TX_BYTE - 1'd1;
+		end else if ((r_TRAILING_EDGE && w_CPHA) || (r_LEADING_EDGE && ~w_CPHA)) begin
+			o_SPI_MOSI <= i_TX_BYTE [r_TX_BIT_INDEX];
+			r_TX_BIT_INDEX <= r_TX_BIT_INDEX - 1;
 		end
 		
 	
@@ -185,7 +181,7 @@ always @ (posedge i_CLK or negedge i_RESET_n) begin
 			r_TX_BIT_INDEX <= 3'b111;
 		
 		end else if ((r_LEADING_EDGE && w_CPHA) || (r_TRAILING_EDGE && ~w_CPHA)) begin
-		//send rx data onto the miso line
+		//send data from miso line onto out into rx
 			o_RX_BYTE [r_RX_BIT_INDEX] <= i_SPI_MISO;
 			r_RX_BIT_INDEX = r_RX_BIT_INDEX - 1;
 			

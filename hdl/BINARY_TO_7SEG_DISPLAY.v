@@ -1,47 +1,32 @@
 module BINARY_TO_7SEG_DISPLAY (
-	input i_CLK,
 	input [3:0] i_BINARY,
-	output o_SEG_0,
-	output o_SEG_1,
-	output o_SEG_2,
-	output o_SEG_3,
-	output o_SEG_4,
-	output o_SEG_5,
-	output o_SEG_6
+	output reg [6:0] o_SEVEN_SEG
 );
 
-reg [6:0] r_SEVEN_SEG = 7'b0000000;
 
-
-always @ (posedge i_CLK) begin
+always @ (i_BINARY) begin
 	case (i_BINARY)
 	//6543210
-	4'b0000 : r_SEVEN_SEG <= 7'b0111111; //0
-	4'b0001 : r_SEVEN_SEG <= 7'b0000110; //1
-	4'b0010 : r_SEVEN_SEG <= 7'b1011011; //2
-	4'b0011 : r_SEVEN_SEG <= 7'b1001111; //3
-	4'b0100 : r_SEVEN_SEG <= 7'b1100110; //4
-	4'b0101 : r_SEVEN_SEG <= 7'b1101101; //5
-	4'b0110 : r_SEVEN_SEG <= 7'b1111101; //6
-	4'b0111 : r_SEVEN_SEG <= 7'b0000111; //7
-	4'b1000 : r_SEVEN_SEG <= 7'b1111111; //8
-	4'b1001 : r_SEVEN_SEG <= 7'b1100111; //9
-	4'b1010 : r_SEVEN_SEG <= 7'b1110111; //10
-	4'b1011 : r_SEVEN_SEG <= 7'b1111100; //11
-	4'b1100 : r_SEVEN_SEG <= 7'b0111001; //12
-	4'b1101 : r_SEVEN_SEG <= 7'b1011110; //13
-	4'b1110 : r_SEVEN_SEG <= 7'b1111001; //14
-	4'b1111 : r_SEVEN_SEG <= 7'b1110001; //15
-	
+	0  : o_SEVEN_SEG = 7'b0111111; //0
+	1  : o_SEVEN_SEG = 7'b0000110; //1
+	2  : o_SEVEN_SEG = 7'b1011011; //2
+	3  : o_SEVEN_SEG = 7'b1001111; //3
+	4  : o_SEVEN_SEG = 7'b1100110; //4
+	5  : o_SEVEN_SEG = 7'b1101101; //5
+	6  : o_SEVEN_SEG = 7'b1111101; //6
+	7  : o_SEVEN_SEG = 7'b0000111; //7
+	8  : o_SEVEN_SEG = 7'b1111111; //8
+	9  : o_SEVEN_SEG = 7'b1100111; //9
+	10 : o_SEVEN_SEG = 7'b1110111; //10
+	11 : o_SEVEN_SEG = 7'b1111100; //11
+	12 : o_SEVEN_SEG = 7'b0111001; //12
+	13 : o_SEVEN_SEG = 7'b1011110; //13
+	14 : o_SEVEN_SEG = 7'b1111001; //14
+	15 : o_SEVEN_SEG = 7'b1110001; //15
+	default: o_SEVEN_SEG = 7'b0000000; //no display
 	endcase
 end
 
-assign o_SEG_6 = r_SEVEN_SEG[6];
-assign o_SEG_5 = r_SEVEN_SEG[5];
-assign o_SEG_4 = r_SEVEN_SEG[4];
-assign o_SEG_3 = r_SEVEN_SEG[3];
-assign o_SEG_2 = r_SEVEN_SEG[2];
-assign o_SEG_1 = r_SEVEN_SEG[1];
-assign o_SEG_0 = r_SEVEN_SEG[0];
+
 
 endmodule
