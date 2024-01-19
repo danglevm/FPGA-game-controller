@@ -1,4 +1,5 @@
 module VGA_CONTROLLER (
+//250 pixels
 input i_CLK,
 input i_RESET_n,
 //RRRGGGGBB based on user manual
@@ -10,6 +11,8 @@ output [3:0] o_GREEN,
 output [3:0] o_BLUE
 );
 
+//800 pixles x 640 lines
+//takes in 8 bit of data and
 //horizontal states
 reg [7:0] r_H_STATE = 3'b000;
 parameter s_H_ACTIVE = 3'b000;
@@ -17,7 +20,7 @@ parameter s_H_FRONT = 3'b001;
 parameter s_H_SYNC = 3'b010;
 parameter s_H_BACK = 3'b011;
 
-//horizontal cycles
+//horizontal cycles - 800 pixels for one whole line
 parameter c_H_ACTIVE_CYCLES = 640 ;
 parameter c_H_FRONT_CYCLES = 16;
 parameter c_H_SYNC_CYCLES = 96;
@@ -37,7 +40,6 @@ reg [3:0] r_Green = 4'b0
 reg [3:0] r_Blue = 4'b0;
 
 
-
 //vertical states
 reg [7:0] r_V_STATE = 3'b100;
 parameter s_V_ACTIVE = 3'b100;
@@ -45,7 +47,7 @@ parameter s_V_FRONT = 3'b101;
 parameter s_V_SYNC = 3'b110;
 parameter s_V_BACK = 3'b111;
 
-//vertical cycles
+//vertical cycles/lines - 525 lines for the whole frame
 parameter c_V_ACTIVE_CYCLES = 480;
 parameter c_V_FRONT_CYCLES = 33;
 parameter c_V_SYNC_CYCLES = 2;
@@ -67,9 +69,22 @@ assign o_BLUE = r_Blue;
 
 always @ (posedge i_CLK or negedge i_RESET_n) 
 	if (~i_RESET_n) begin
+	//go back to active state, at the first pixel of the frame
+	r_H_STATE <= s_H_ACTIVE;
+	r_V_STATE <= s_V_ACTIVE;
+	r_H_COUNTER <= 0;
+	r_V_COUNTER <= 0;
+	r_END_LINE <= 0;
+	r_Red <= 4'b0;
+	r_Green <= 4'b0;
+	r_Blue <= 4'b0;
+	
 	
 	else
 	begin
+	
+		//finishes drawing one line then move to the next line
+		//hence horizontal state first before vertical
 		case (r_H_STATE) 
 		s_H_ACTIVE: 
 			begin
@@ -229,7 +244,7 @@ always @ (posedge i_CLK or negedge i_RESET_n)
 		endcase
 		
 		//if they are in horizontal and vertical active states
-		if (r_H_STATE == s_H_STATE) begin
+		if (r_H_STATE == s_H_ACTIVE) begin
 			if (r_V_STATE == s_V_ACTIVE) begin
 				r_Red <= {i_RGB [7:5], 1'b0};
 				r_Green <= {i_RGB [4:2], 1'b0};

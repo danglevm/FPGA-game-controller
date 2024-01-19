@@ -23,7 +23,7 @@ always @ (i_BINARY) begin
 	13 : o_SEVEN_SEG = 7'b1011110; //13
 	14 : o_SEVEN_SEG = 7'b1111001; //14
 	15 : o_SEVEN_SEG = 7'b1110001; //15
-	default: o_SEVEN_SEG = 7'b0000000; //no display
+	default: o_SEVEN_SEG = 7'b1111111; //no display
 	endcase
 end
 

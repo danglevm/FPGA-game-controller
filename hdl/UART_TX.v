@@ -29,6 +29,8 @@ parameter c_HIGH = 1'b1;
 always @(posedge i_CLK or negedge i_RESET_n) 
 	if (~i_RESET_n) begin
 		r_STATE <= s_IDLE;
+		r_COUNTER <= 1'd0;
+		o_TX_DONE <= c_LOW;
 	end else begin
 	
 	begin
@@ -56,7 +58,7 @@ always @(posedge i_CLK or negedge i_RESET_n)
 				
 				//wait out one cycle
 				if (r_COUNTER < c_CYCLES_PER_BIT - 1) begin
-					r_TX_ACTIVE <= c_LOW;
+					o_TX_ACTIVE <= c_LOW;
 					r_COUNTER <= r_COUNTER + 1'd1;
 					r_STATE <= s_START;
 				end else begin

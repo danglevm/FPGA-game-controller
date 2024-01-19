@@ -1,5 +1,5 @@
 
- `timescale 1ns/10ps
+ `timescale 1ns/1ps
  `include "../hdl/UART_RX.v"
 
 module UART_RX_tb ();
@@ -35,11 +35,14 @@ parameter c_BIT_PERIOD = 8680;
 parameter c_HIGH = 1'b1;
 parameter c_LOW = 1'b0;
 parameter c_BIT_LENGTH = 1'd8;
-//in 8 bits, 00011010
-parameter c_EXPECTED_VALUE = 8'b0011010;
+//in 8 bits, 00011010, 0 - 255 in decimal
+parameter expected_value = 250;
+integer i = 0;
 
 reg r_CLK = 1'b0;
-reg r_RESET = 1'b0;
+
+//active low default should be one
+reg r_RESET_n = 1'b1;
 reg r_SERIAL_DATA = 1'b1;
 
 
@@ -52,7 +55,7 @@ wire w_VALID;
 UART_RX #( .c_CYCLES_PER_BIT(c_CYCLES_PER_BIT) ) UUT 
 (	
 	.i_CLK(r_CLK),
-	.i_RESET_n(r_RESET),
+	.i_RESET_n(r_RESET_n),
 	.i_SERIAL_DATA(r_SERIAL_DATA),
 	.o_DATA_RX(w_DATA_DRIVEN),
 	.o_RX_DATA_VALID(w_VALID)
@@ -71,12 +74,10 @@ task WRITE_TO_RX;
 		//send start bit and wait for one bit cycle
 		r_SERIAL_DATA <= c_LOW;
 		#(c_BIT_PERIOD);
-		#1000;
 		
 		//send data bit
 		for (p_count = 0; p_count < 8; p_count = p_count + 1) begin
 			r_SERIAL_DATA <= p_BYTE [p_count];
-			$display(p_BYTE[p_count]);
 			#(c_BIT_PERIOD);
 		end
 		
@@ -94,23 +95,14 @@ always
  
 initial 
 	begin
-		
-		@(posedge r_CLK);
-		WRITE_TO_RX(c_EXPECTED_VALUE);
-		@(posedge r_CLK);
-		
-		if (w_DATA_DRIVEN == c_EXPECTED_VALUE) begin
-			$display ("Correct value received");
-		end else begin 
-			$display ("Incorrect value received");
-		end
-		
-		@(posedge r_CLK);
-		
+			@(posedge r_CLK);
+			WRITE_TO_RX(expected_value);
+			
+			@(posedge r_CLK);
+			if (w_DATA_DRIVEN == expected_value) $display ("Correct value received - %0d", expected_value);
+			else $display ("Incorrect value received - %0d", expected_value);
 			
 		$stop;
-		
-	
 		
 	end
 	

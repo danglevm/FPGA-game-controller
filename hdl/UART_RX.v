@@ -3,6 +3,8 @@ module UART_RX
 //how many clock pulses are generated per bit transmitted
 //50 MHz, and baud rate of 115200 => 50 000 000 / 115200 =  434 cycles/second
 //for some reason 434 cycles break the machine so for now a PLL of 25 MHz should be made
+
+//UART_RX takes in Serial data and outputs parallel data
 # (parameter c_CYCLES_PER_BIT = 217)
 (
 	input i_CLK,
@@ -19,7 +21,7 @@ reg [2:0] r_STATE  = 3'b000;
 reg [7:0] r_COUNTER = 0;
 reg [2:0] r_BIT_INDEX = 0;
 reg r_RX_DV = 1'b0;
-reg [7:0] r_DATA_RX;
+reg [7:0] r_DATA_RX = 0;
 
 /******************************
 - synchronisation variables
@@ -32,17 +34,17 @@ reg r_RX_DATA_I, r_RX_DATA_S;
 /******************************
 	STATES
 *******************************/
-parameter s_IDLE = 3'b000;
-parameter s_START = 3'b001;
-parameter s_DATA = 3'b010;
-parameter s_END = 3'b011;
-parameter s_TRANSITION = 3'b100;
+localparam s_IDLE = 3'b000;
+localparam s_START = 3'b001;
+localparam s_DATA = 3'b010;
+localparam s_END = 3'b011;
+localparam s_TRANSITION = 3'b100;
 
 
-parameter c_HIGH = 1'b1;
-parameter c_LOW = 1'b0;
+localparam c_HIGH = 1'b1;
+localparam c_LOW = 1'b0;
 //enable generator to turn 50 MHz to 25MHz
-parameter c_25MHz = 2;
+localparam c_25MHz = 2;
 
 
 //double register to synchronize inputs and avoid metastability
@@ -56,10 +58,11 @@ always @ (posedge i_CLK)
 
 	
 //FSM
-always @(posedge i_CLK or negedge ~i_RESET_n)
+always @(posedge i_CLK or negedge i_RESET_n)
 	begin
-	if (~i_RESET_n) begin
+	if (i_RESET_n == 0) begin
 		r_STATE <= s_IDLE;
+		r_DATA_RX <= 0;
 	end 
 	else begin
 		case (r_STATE) 

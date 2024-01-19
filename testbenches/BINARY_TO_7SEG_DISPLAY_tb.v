@@ -16,7 +16,7 @@ module BINARY_TO_7SEG_DISPLAY_tb();
 ***************************/
 //reg r_CLK = 1'b0;
 reg [3:0] r_BINARY = 4'b0000;
-integer i = 1'd0;
+integer i = 0;
 
 wire [6:0] w_SEVEN_SEG;
 
