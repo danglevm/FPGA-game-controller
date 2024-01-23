@@ -1,7 +1,7 @@
 module UART_RX 
 //relate clock frequency with bit rate
 //how many clock pulses are generated per bit transmitted
-//50 MHz, and baud rate of 115200 => 50 000 000 / 115200 =  434 cycles/second
+//25 MHz, and baud rate of 115200 => 25 000 000 / 115200 =  217 cycles/bit
 //for some reason 434 cycles break the machine so for now a PLL of 25 MHz should be made
 
 //UART_RX takes in Serial data and outputs parallel data

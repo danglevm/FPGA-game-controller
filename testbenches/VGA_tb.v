@@ -1,4 +1,5 @@
 `include "../hdl/VGA_CONTROLLER.v"
+`include "VGA_TESTGEN.v"
 `timescale 1ns/10ps
 
 module VGA_tb();
@@ -42,8 +43,13 @@ always
 	(#c_cycle_period) r_clk = !r_clk;
 	
 task write_RGB_data;
-	r_RGB_data <= 
+	input [7:0] i_byte;
+	begin
+		r_RGB_data <= i_byte; 
 	
+	
+	
+	end
 endtask
 
 initial 
