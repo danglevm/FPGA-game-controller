@@ -10,8 +10,8 @@ module UART_RX
 	input i_CLK,
 	input i_RESET_n,
 	input i_SERIAL_DATA,
-	output o_RX_DATA_VALID,
-	output [7:0] o_DATA_RX
+	output reg o_RX_DATA_VALID,
+	output reg [7:0] o_DATA_RX
 	//tells the module upstream that the data inside of the byte is actually valid
 	//the upstream module will not look at the byte until it has seen a pulse from here
 	
@@ -20,8 +20,8 @@ module UART_RX
 reg [2:0] r_STATE  = 3'b000;
 reg [7:0] r_COUNTER = 0;
 reg [2:0] r_BIT_INDEX = 0;
-reg r_RX_DV = 1'b0;
-reg [7:0] r_DATA_RX = 0;
+//reg r_RX_DV = 1'b0;
+//reg [7:0] r_DATA_RX = 0;
 
 /******************************
 - synchronisation variables
@@ -62,7 +62,7 @@ always @(posedge i_CLK or negedge i_RESET_n)
 	begin
 	if (i_RESET_n == 0) begin
 		r_STATE <= s_IDLE;
-		r_DATA_RX <= 0;
+		o_DATA_RX <= 0;
 	end 
 	else begin
 		case (r_STATE) 
@@ -70,7 +70,7 @@ always @(posedge i_CLK or negedge i_RESET_n)
 		s_IDLE:
 			begin
 				//default assignment
-				r_RX_DV <= c_LOW; 
+				o_RX_DV <= c_LOW; 
 				r_COUNTER <= 0;
 				r_BIT_INDEX <= 0;
 				
@@ -103,7 +103,7 @@ always @(posedge i_CLK or negedge i_RESET_n)
 					if (r_COUNTER == (c_CYCLES_PER_BIT - 1)) begin
 					
 					//assign synchronised value to receiver data
-						r_DATA_RX [r_BIT_INDEX] <= r_RX_DATA_S;
+						o_DATA_RX [r_BIT_INDEX] <= r_RX_DATA_S;
 						r_COUNTER <= 0;
 					
 						if (r_BIT_INDEX < 7) begin
@@ -143,7 +143,7 @@ always @(posedge i_CLK or negedge i_RESET_n)
 				//wait out the whole bit cycle for the stop bit to finish
 				//still sample at the half bit
 				if (r_COUNTER == (c_CYCLES_PER_BIT - 1)) begin
-					r_RX_DV <= c_HIGH; //data is valid and can now be sent
+					o_RX_DV <= c_HIGH; //data is valid and can now be sent
 					r_COUNTER <= 0;
 					r_STATE <= s_TRANSITION;
 				end else begin
@@ -166,7 +166,7 @@ always @(posedge i_CLK or negedge i_RESET_n)
 		s_TRANSITION:
 			begin
 				//wait for one clock cycle before continuing
-				r_RX_DV <= c_LOW;
+				o_RX_DV <= c_LOW;
 				r_STATE <= s_IDLE;
 			end
 			
@@ -177,8 +177,8 @@ always @(posedge i_CLK or negedge i_RESET_n)
 		end //i_RESET
 	end //FSM
 	
-assign o_DATA_RX = r_DATA_RX;
-assign o_RX_DATA_VALID = r_RX_DV;
+//assign o_DATA_RX = r_DATA_RX;
+//assign o_RX_DATA_VALID = r_RX_DV;
 
 endmodule
 
